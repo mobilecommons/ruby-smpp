@@ -19,6 +19,7 @@ class PduParsingTest < Test::Unit::TestCase
     assert_equal "447803029837", pdu.destination_addr
     assert_nil pdu.udh
     assert_equal "Test", pdu.short_message
+    assert_equal false, pdu.response?
   end
 
   def test_recieve_part_one_of_multi_part_message
@@ -86,6 +87,7 @@ class PduParsingTest < Test::Unit::TestCase
     pdu = create_pdu(data)
     assert_equal Smpp::Pdu::SubmitSmResponse, pdu.class
     assert_equal "54114-0415V-2120E-09H1Q", pdu.message_id
+    assert_equal true, pdu.response?
   end
 
   def test_submit_sm_response_with_optional_params

@@ -105,6 +105,10 @@ module Smpp::Pdu
       Smpp::Base.logger
     end
 
+    def response?
+      @command_id > 0X80000000
+    end
+
     def to_human
       # convert header (4 bytes) to array of 4-byte ints
       a = @data.to_s.unpack('N4')

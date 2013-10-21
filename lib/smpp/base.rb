@@ -25,6 +25,10 @@ module Smpp
       # associated message ID, and then create a pending delivery report.
       @ack_ids = {}
 
+      # Array of PDU sequence numbers waiting for a response PDU.
+      # We will timeout after waiting (default) 10 seconds
+      @response_timers = {}
+
       ed = @config[:enquire_link_delay_secs] || 5
       comm_inactivity_timeout = 2 * ed
     end
@@ -271,6 +275,7 @@ module Smpp
       logger.debug "<- #{pdu.to_human}"
       hex_debug pdu.data, "<- "
       send_data pdu.data
+      set_response_timer(pdu) if !pdu.response?
     end
 
     def read_pdu(data)
@@ -278,6 +283,8 @@ module Smpp
       # we may either receive a new request or a response to a previous response.
       begin
         pdu = Pdu::Base.create(data)
+        cancel_response_timer(pdu) if pdu.response?
+
         if !pdu
           logger.warn "Not able to parse PDU!"
         else
@@ -289,6 +296,28 @@ module Smpp
         raise
       end
       pdu
+    end
+
+    def set_response_timer(pdu)
+      @response_timers[pdu.sequence_number] = EventMachine::Timer.new(response_timer) do
+        run_callback(:response_timeout, pdu.sequence_number)
+      end
+    end
+
+    def cancel_response_timer(pdu)
+      if timer = @response_timers.delete(pdu.sequence_number)
+        begin
+          timer.cancel
+        rescue Exception => ex
+          logger.error "Error removing response_timer for #{pdu.sequence_number}: #{ex.message}"
+        end
+      else
+        logger.error "WARNING Received sequence number #{pdu.sequence_number} but no associated response_timer found in #{@response_timers.keys.inspect}"
+      end
+    end
+
+    def response_timer
+      @config[:response_timer]||=10
     end
 
     def hex_debug(data, prefix = "")
