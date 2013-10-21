@@ -157,12 +157,15 @@ module Smpp
       when Pdu::DeliverSm
         begin
           logger.debug "ESM CLASS #{pdu.esm_class}"
-          if pdu.esm_class != 4
+          case pdu.esm_class
+          when Pdu::Base::ESM_CLASS_DEFAULT, Pdu::Base::ESM_CLASS_DEFAULT_UDHI
             # MO message
             run_callback(:mo_received, self, pdu)
-          else
+          when Pdu::Base::ESM_CLASS_DELVR_REP, Pdu::Base::ESM_CLASS_DELVR_ACK, Pdu::Base::ESM_CLASS_USER_ACK, Pdu::Base::ESM_CLASS_INTER_ACK
             # Delivery report
             run_callback(:delivery_report_received, self, pdu)
+          else
+            raise "Unknown ESM Class #{pdu.esm_class}"
           end
           write_pdu(Pdu::DeliverSmResponse.new(pdu.sequence_number))
         rescue => e
