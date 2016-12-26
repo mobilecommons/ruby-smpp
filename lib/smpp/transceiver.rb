@@ -40,7 +40,7 @@ class Smpp::Transceiver < Smpp::Base
       while message.size > 0 do
         parts << message.slice!(0..Smpp::Transceiver.get_message_part_size(options))
       end
-
+      logger.debug "Getting message parts size #{parts.size}, Inspect the parts ! #{parts.inspect}"
       0.upto(parts.size-1) do |i|
         udh = sprintf("%c", 5)            # UDH is 5 bytes.
         udh << sprintf("%c%c", 0, 3)      # This is a concatenated message
@@ -53,7 +53,7 @@ class Smpp::Transceiver < Smpp::Base
 
         options[:esm_class] = 64 # This message contains a UDH header.
         options[:udh] = udh
-
+        logger.debug "Message sequence_number - #{i} Message UDH - #{options[:udh]}"
         pdu = Pdu::SubmitSm.new(source_addr, destination_addr, parts[i], options)
         write_pdu pdu
 
