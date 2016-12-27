@@ -67,8 +67,8 @@ class Smpp::Transceiver < Smpp::Base
         
         
         options[:esm_class] = 64 # This message contains a UDH header.
-        options[:udh] = udh.join
-        logger.debug "Message sequence_number - #{i} Message UDH - #{udh.join.inspect} - All the options #{options.inspect}"
+        options[:udh] = udh
+        logger.debug "Message sequence_number - #{i} Message UDH - #{udh.inspect} - All the options #{options.inspect}"
         pdu = Pdu::SubmitSm.new(source_addr, destination_addr, parts[i], options)
         write_pdu pdu
 
