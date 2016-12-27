@@ -63,7 +63,7 @@ class Smpp::Transceiver < Smpp::Base
                parts.size, # How many parts this message consists of
                i+1         # This is part i+1
               ].pack('C'*6)
-        
+        udh = "050003F0030"+(i+1).to_s
         
         
         options[:esm_class] = 64 # This message contains a UDH header.
