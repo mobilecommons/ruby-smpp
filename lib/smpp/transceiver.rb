@@ -42,23 +42,24 @@ class Smpp::Transceiver < Smpp::Base
       end
       logger.debug "Getting message parts size #{parts.size}, Inspect the parts ! #{parts.inspect} , The message id = #{message_id}"
       0.upto(parts.size-1) do |i|
-        udh = sprintf("%c", 5)            # UDH is 5 bytes.
+        udh = []
+        udh[0] = sprintf("%c", 5)            # UDH is 5 bytes.
         logger.debug "_Step 1 - #{udh}"
-        udh << sprintf("%c%c", 0, 3)      # This is a concatenated message
+        udh[1] = sprintf("%c%c", 0, 3)      # This is a concatenated message
         logger.debug "_Step 2 - #{udh}"
         #TODO Figure out why this needs to be an int here, it's a string elsewhere
-        udh << sprintf("%c", message_id)  # The ID for the entire concatenated message
+        udh[2] = sprintf("%c", message_id)  # The ID for the entire concatenated message
         logger.debug "_Step 3 - #{udh}"
         
-        udh << sprintf("%c", parts.size)  # How many parts this message consists of
+        udh[3] = sprintf("%c", parts.size)  # How many parts this message consists of
         logger.debug "_Step 4 - #{udh}"
 
-        udh << sprintf("%c", i+1)         # This is part i+1
+        udh[4] = sprintf("%c", i+1)         # This is part i+1
         logger.debug "_Step 5 - #{udh}"
         
         options[:esm_class] = 64 # This message contains a UDH header.
-        options[:udh] = udh
-        logger.debug "Message sequence_number - #{i} Message UDH - #{udh.inspect} - All the options #{options.inspect}"
+        options[:udh] = udh.join
+        logger.debug "Message sequence_number - #{i} Message UDH - #{udh.join.inspect} - All the options #{options.inspect}"
         pdu = Pdu::SubmitSm.new(source_addr, destination_addr, parts[i], options)
         write_pdu pdu
 
