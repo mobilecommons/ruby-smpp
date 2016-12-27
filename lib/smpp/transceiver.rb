@@ -59,7 +59,7 @@ class Smpp::Transceiver < Smpp::Base
         # https://github.com/Eloi/ruby-smpp/commit/6c2c20297cde4d3473c4c8362abed6ded6d59c09?diff=unified
         udh = [ 5,         # UDH is 5 bytes.
                0, 3,       # This is a concatenated message
-               message_id.to_i%256, # Ensure single byte message_id
+               240, # Ensure single byte message_id
                parts.size, # How many parts this message consists of
                i+1         # This is part i+1
               ].pack('C'*6)
