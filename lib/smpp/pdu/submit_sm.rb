@@ -41,11 +41,11 @@ class Smpp::Pdu::SubmitSm < Smpp::Pdu::Base
     pdu_body = [@service_type, @source_addr_ton, @source_addr_npi, @source_addr, @dest_addr_ton, @dest_addr_npi, @destination_addr,
     @esm_class, @protocol_id, @priority_flag, @schedule_delivery_time, @validity_period, @registered_delivery,
     @replace_if_present_flag, @data_coding, @sm_default_msg_id, @sm_length, payload].pack("A*xCCA*xCCA*xCCCA*xA*xCCCCCA*")
-
+    
     if @optional_parameters
       pdu_body << optional_parameters_to_buffer(@optional_parameters)
     end
-
+    logger.debug "#{pdu_body}"
     seq ||= next_sequence_number
 
     super(SUBMIT_SM, 0, seq, pdu_body)
