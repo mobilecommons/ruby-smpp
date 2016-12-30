@@ -45,7 +45,7 @@ class Smpp::Pdu::SubmitSm < Smpp::Pdu::Base
     if @optional_parameters
       pdu_body << optional_parameters_to_buffer(@optional_parameters)
     end
-    logger.debug "This is pdu body: #{pdu_body}"
+    logger.debug "This is pdu body: #{pdu_body.inspect}"
     seq ||= next_sequence_number
 
     super(SUBMIT_SM, 0, seq, pdu_body)
