@@ -41,7 +41,7 @@ class Smpp::Transceiver < Smpp::Base
         parts << message.slice!(0..Smpp::Transceiver.get_message_part_size(options))
       end
       logger.debug "Getting message parts size #{parts.size}, Inspect the parts ! #{parts.inspect} , The message id = #{message_id}"
-      0.upto(parts.size-1) do |i|
+      0.upto(0) do |i|
 #         udh = []
 #         udh[0] = sprintf("%c", 5)            # UDH is 5 bytes.
 #         logger.debug "_Step 1 - #{udh}"
