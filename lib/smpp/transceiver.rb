@@ -58,12 +58,12 @@ class Smpp::Transceiver < Smpp::Base
         
         # New encoding style taken from 
         # https://github.com/Eloi/ruby-smpp/commit/6c2c20297cde4d3473c4c8362abed6ded6d59c09?diff=unified
-        udh = [ 5,         # UDH is 5 bytes.
-                0, 3,       # This is a concatenated message
+        udh = [ 6,         # UDH is 5 bytes.
+                8, 4,       # This is a concatenated message
                 message_id, # Ensure single byte message_id
                 parts.size, # How many parts this message consists of
                 i+1         # This is part i+1
-               ].pack('C'*6)
+               ].pack('CCCS>CC')
 #         udh = "050003F0030"+(i+1).to_s
         
         
