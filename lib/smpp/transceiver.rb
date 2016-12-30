@@ -42,33 +42,33 @@ class Smpp::Transceiver < Smpp::Base
       end
       logger.debug "Getting message parts size #{parts.size}, Inspect the parts ! #{parts.inspect} , The message id = #{message_id}"
       0.upto(parts.size-1) do |i|
-        udh = []
-        udh[0] = sprintf("%c", 5)            # UDH is 5 bytes.
-        logger.debug "_Step 1 - #{udh}"
-        udh[1] = sprintf("%c%c", 0, 3)      # This is a concatenated message
-        logger.debug "_Step 2 - #{udh}"
-        #TODO Figure out why this needs to be an int here, it's a string elsewhere
-        udh[2] = sprintf("%c", message_id)  # The ID for the entire concatenated message
-        logger.debug "_Step 3 - #{udh}"        
-        udh[3] = sprintf("%c", parts.size)  # How many parts this message consists of
-        logger.debug "_Step 4 - #{udh}"
-        udh[4] = sprintf("%c", i+1)         # This is part i+1
-        logger.debug "_Step 5 - #{udh}"
+#         udh = []
+#         udh[0] = sprintf("%c", 5)            # UDH is 5 bytes.
+#         logger.debug "_Step 1 - #{udh}"
+#         udh[1] = sprintf("%c%c", 0, 3)      # This is a concatenated message
+#         logger.debug "_Step 2 - #{udh}"
+#         #TODO Figure out why this needs to be an int here, it's a string elsewhere
+#         udh[2] = sprintf("%c", message_id)  # The ID for the entire concatenated message
+#         logger.debug "_Step 3 - #{udh}"        
+#         udh[3] = sprintf("%c", parts.size)  # How many parts this message consists of
+#         logger.debug "_Step 4 - #{udh}"
+#         udh[4] = sprintf("%c", i+1)         # This is part i+1
+#         logger.debug "_Step 5 - #{udh}"
         
         # New encoding style taken from 
         # https://github.com/Eloi/ruby-smpp/commit/6c2c20297cde4d3473c4c8362abed6ded6d59c09?diff=unified
-#         udh = [ 5,         # UDH is 5 bytes.
-#                0, 3,       # This is a concatenated message
-#                240, # Ensure single byte message_id
-#                parts.size, # How many parts this message consists of
-#                i+1         # This is part i+1
-#               ].pack('C'*6)
+        udh = [ 5,         # UDH is 5 bytes.
+                0, 3,       # This is a concatenated message
+                message_id, # Ensure single byte message_id
+                parts.size, # How many parts this message consists of
+                i+1         # This is part i+1
+               ].pack('C'*6)
 #         udh = "050003F0030"+(i+1).to_s
         
         
         options[:esm_class] = 64 # This message contains a UDH header.
-        options[:udh] = udh.join
-        logger.debug "Message sequence_number - #{i} Message UDH - #{udh.join.inspect} - All the options #{options.inspect}"
+        options[:udh] = udh
+        logger.debug "Message sequence_number - #{i} Message UDH - #{udh.inspect} - All the options #{options.inspect}"
         pdu = Pdu::SubmitSm.new(source_addr, destination_addr, parts[i], options)
         write_pdu pdu
 
