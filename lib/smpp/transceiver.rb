@@ -80,7 +80,7 @@ class Smpp::Transceiver < Smpp::Base
         @ack_ids[pdu.sequence_number] = message_id
       end
     else
-      raise InvalidStateException, "Transceiver is unbound. Connot send MT messages."
+      raise InvalidStateException, "Transceiver is unbound. Cannot send MT messages."
     end
   end
 
