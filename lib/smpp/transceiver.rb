@@ -89,8 +89,10 @@ class Smpp::Transceiver < Smpp::Base
     logger.debug "Sending Multiple MT: #{short_message}"
     if @state == :bound
       pdu = Pdu::SubmitMulti.new(source_addr, destination_addr_arr, short_message, options)
+      logger.debug "send_concat_mt_pdu_details #{pdu.inspect}"
+      
       write_pdu pdu
-
+      
       # keep the message ID so we can associate the SMSC message ID with our message
       # when the response arrives.
       @ack_ids[pdu.sequence_number] = message_id
