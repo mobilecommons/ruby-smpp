@@ -78,6 +78,7 @@ class Smpp::Transceiver < Smpp::Base
         # This is definately a bit hacky - multiple PDUs are being associated with a single
         # message_id.
         @ack_ids[pdu.sequence_number] = message_id
+        break
       end
     else
       raise InvalidStateException, "Transceiver is unbound. Cannot send MT messages."
