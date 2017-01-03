@@ -7,7 +7,7 @@ class Smpp::Pdu::SubmitSmResponse < Smpp::Pdu::Base
   attr_accessor :optional_parameters
 
   def initialize(seq, status, message_id, optional_parameters=nil)
-    seq ||= next_sequence_number
+    #seq ||= next_sequence_number
     body = message_id.to_s + "\000"
     super(SUBMIT_SM_RESP, status, seq, body)
     @message_id = message_id
