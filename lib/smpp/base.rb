@@ -97,7 +97,7 @@ module Smpp
     def receive_data(data)
       #append data to buffer
       @data << data
-      logger.info "This is the raw data = #{@data}"
+      logger.info "This is the raw data = #{data.inspect}"
       while (@data.length >=4)
         cmd_length = @data[0..3].unpack('N').first
         if(@data.length < cmd_length)
