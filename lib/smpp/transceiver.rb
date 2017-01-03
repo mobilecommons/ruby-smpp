@@ -71,6 +71,8 @@ class Smpp::Transceiver < Smpp::Base
         options[:udh] = udh
         logger.debug "Message sequence_number - #{i} Message UDH - #{udh.inspect} - All the options #{options.inspect}"
         pdu = Pdu::SubmitSm.new(source_addr, destination_addr, parts[i], options)
+        logger.debug "send_concat_mt_pdu_details #{pdu.inspect}"
+        
         write_pdu pdu
 
         # This is definately a bit hacky - multiple PDUs are being associated with a single
@@ -89,8 +91,6 @@ class Smpp::Transceiver < Smpp::Base
     logger.debug "Sending Multiple MT: #{short_message}"
     if @state == :bound
       pdu = Pdu::SubmitMulti.new(source_addr, destination_addr_arr, short_message, options)
-      logger.debug "send_concat_mt_pdu_details #{pdu.inspect}"
-      
       write_pdu pdu
       
       # keep the message ID so we can associate the SMSC message ID with our message
