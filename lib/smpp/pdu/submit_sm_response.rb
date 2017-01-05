@@ -12,6 +12,7 @@ class Smpp::Pdu::SubmitSmResponse < Smpp::Pdu::Base
     super(SUBMIT_SM_RESP, status, seq, body)
     @message_id = message_id
     @optional_parameters = optional_parameters
+    logger.info "submit_sm_response_optional_parameters #{@optional_parameters.inspect}"
   end
 
   def optional_parameter(tag)
