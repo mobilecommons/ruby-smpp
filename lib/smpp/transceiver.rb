@@ -41,7 +41,7 @@ class Smpp::Transceiver < Smpp::Base
         parts << message.slice!(0...(Smpp::Transceiver.get_message_part_size(options) - 1))
       end
       logger.debug "Getting message parts size #{parts.size}, Inspect the parts ! #{parts.inspect} , The message id = #{message_id}"
-#       0.upto(parts.size-1) do |i|
+       0.upto(parts.size-1) do |i|
 #        
 #         udh = []
 #         udh[0] = sprintf("%c", 5)            # UDH is 5 bytes.
@@ -62,7 +62,7 @@ class Smpp::Transceiver < Smpp::Base
                 8, 4,       # This is a concatenated message
                 message_id, # Ensure single byte message_id
                 parts.size, # How many parts this message consists of
-                1         # This is part i+1
+                i + 1         # This is part i+1
                ].pack('CCCS>CC')
 #         udh = "050003F0030"+(i+1).to_s
         
@@ -78,7 +78,7 @@ class Smpp::Transceiver < Smpp::Base
         # This is definately a bit hacky - multiple PDUs are being associated with a single
         # message_id.
         @ack_ids[pdu.sequence_number] = message_id
-#       end
+       end
     else
       raise InvalidStateException, "Transceiver is unbound. Cannot send MT messages."
     end
