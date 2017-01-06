@@ -198,17 +198,17 @@ module Smpp
           close_connection
         end
       when Pdu::SubmitSmResponse
-        mt_message_id = @ack_ids.delete(pdu.sequence_number)
-        if !mt_message_id
+        metadata = @ack_ids.delete(pdu.sequence_number)
+        if !metadata
           raise "Got SubmitSmResponse for unknown sequence_number: #{pdu.sequence_number}"
         end
         if pdu.command_status != Pdu::Base::ESME_ROK
           logger.error "Error status in SubmitSmResponse: #{pdu.command_status}"
-          run_callback(:message_rejected, self, mt_message_id, pdu)
+          run_callback(:message_rejected, self, metadata, pdu)
         else
           logger.info "submit_sm_response pdu - #{pdu.inspect}"
-          logger.info "Got OK SubmitSmResponse (#{pdu.message_id} -> #{mt_message_id})"
-          run_callback(:message_accepted, self, mt_message_id, pdu)
+          logger.info "Got OK SubmitSmResponse (#{pdu.message_id} -> #{metadata[:message_id]}, part_number -> #{metadata[:part_number]}, parts_size -> #{metadata[:parts_size]})"
+          run_callback(:message_accepted, self, metadata, pdu)
         end
       when Pdu::SubmitMultiResponse
         mt_message_id = @ack_ids[pdu.sequence_number]
