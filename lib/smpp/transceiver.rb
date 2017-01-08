@@ -25,7 +25,7 @@ class Smpp::Transceiver < Smpp::Base
 
       # keep the message ID so we can associate the SMSC message ID with our message
       # when the response arrives.
-      @ack_ids[pdu.sequence_number] = {:message_id => message_id }
+      @ack_ids[pdu.sequence_number] = message_id
     else
       raise InvalidStateException, "Transceiver is unbound. Cannot send MT messages."
     end
@@ -60,7 +60,7 @@ class Smpp::Transceiver < Smpp::Base
         # https://github.com/Eloi/ruby-smpp/commit/6c2c20297cde4d3473c4c8362abed6ded6d59c09?diff=unified
         udh = [ 6,         # UDH is 5 bytes.
                 8, 4,       # This is a concatenated message
-                message_id, # Ensure single byte message_id
+                message_id % 65535, # Ensure single byte message_id
                 parts.size, # How many parts this message consists of
                 i + 1         # This is part i+1
                ].pack('CCCS>CC')
