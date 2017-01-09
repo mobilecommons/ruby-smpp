@@ -207,7 +207,7 @@ module Smpp
           run_callback(:message_rejected, self, metadata, pdu)
         else
           logger.info "submit_sm_response pdu - #{pdu.inspect}"
-          logger.info "Got OK SubmitSmResponse (#{pdu.message_id} -> #{metadata[:message_id]}, part_number -> #{metadata[:part_number]}, parts_size -> #{metadata[:parts_size]})"
+          logger.info "Got OK SubmitSmResponse (#{pdu.message_id} -> #{metadata})"
           run_callback(:message_accepted, self, metadata, pdu)
         end
       when Pdu::SubmitMultiResponse
