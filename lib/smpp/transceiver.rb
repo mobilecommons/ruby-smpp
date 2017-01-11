@@ -38,14 +38,13 @@ class Smpp::Transceiver < Smpp::Base
       # Split the message into parts of 153 characters. (160 - 7 characters for UDH)
       parts = []
 #       logger.debug "Encoding :- #{Encoding.default_external.inspect}"
-#       message = message.encode("UTF-8", :invalid => :replace, :undef => :replace, :replace => '') if options[:data_coding] == 8
-      while message.size > 0 do  
-        if options[:data_coding] == 8
-          parts << message.slice!(0...(Smpp::Transceiver.get_message_part_size(options) * 2))
-        else
-          parts << message.slice!(0...(Smpp::Transceiver.get_message_part_size(options) - 1))
-        end  
-      end
+      if options[:data_coding] == 8
+        shadow_message = message.encode("UTF-8", :invalid => :replace, :undef => :replace, :replace => '') 
+      else
+        while message.size > 0 do  
+            parts << message.slice!(0...(Smpp::Transceiver.get_message_part_size(options) - 1))
+        end
+      end  
 #       if options[:data_coding] == 8
 #         parts.map! do |part|
 #           part.encode(Encoding::UCS_2BE, :invalid => :replace, :undef => :replace, :replace => '')
