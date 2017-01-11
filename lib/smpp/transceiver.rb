@@ -37,16 +37,20 @@ class Smpp::Transceiver < Smpp::Base
     if @state == :bound
       # Split the message into parts of 153 characters. (160 - 7 characters for UDH)
       parts = []
-      logger.debug "Encoding :- #{Encoding.default_external.inspect}"
-      message = message.encode("UTF-8", :invalid => :replace, :undef => :replace, :replace => '') if options[:data_coding] == 8
+#       logger.debug "Encoding :- #{Encoding.default_external.inspect}"
+#       message = message.encode("UTF-8", :invalid => :replace, :undef => :replace, :replace => '') if options[:data_coding] == 8
       while message.size > 0 do  
-        parts << message.slice!(0...(Smpp::Transceiver.get_message_part_size(options) - 1))
+        if options[:data_coding] == 8
+          parts << message.slice!(0...((Smpp::Transceiver.get_message_part_size(options) - 1) * 2))
+        else
+          parts << message.slice!(0...(Smpp::Transceiver.get_message_part_size(options) - 1))
+        end  
       end
-      if options[:data_coding] == 8
-        parts.map! do |part|
-          part.encode(Encoding::UCS_2BE, :invalid => :replace, :undef => :replace, :replace => '')
-        end
-      end
+#       if options[:data_coding] == 8
+#         parts.map! do |part|
+#           part.encode(Encoding::UCS_2BE, :invalid => :replace, :undef => :replace, :replace => '')
+#         end
+#       end
        
       logger.debug "send_concat_mt_parts_details parts: #{parts.inspect}, parts size: #{parts.size}"
       
