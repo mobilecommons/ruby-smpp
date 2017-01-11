@@ -41,7 +41,7 @@ class Smpp::Transceiver < Smpp::Base
 #       message = message.encode("UTF-8", :invalid => :replace, :undef => :replace, :replace => '') if options[:data_coding] == 8
       while message.size > 0 do  
         if options[:data_coding] == 8
-          parts << message.slice!(0...((Smpp::Transceiver.get_message_part_size(options) - 1) * 2))
+          parts << message.slice!(0...(Smpp::Transceiver.get_message_part_size(options) * 2))
         else
           parts << message.slice!(0...(Smpp::Transceiver.get_message_part_size(options) - 1))
         end  
