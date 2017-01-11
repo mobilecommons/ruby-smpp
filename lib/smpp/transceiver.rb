@@ -39,7 +39,7 @@ class Smpp::Transceiver < Smpp::Base
       parts = []
 #       logger.debug "Encoding :- #{Encoding.default_external.inspect}"
       if options[:data_coding] == 8
-        message.chars.to_a.each_slice(Smpp::Transceiver.get_message_part_size(options)) do |part|
+        message.chars.to_a.each_slice(Smpp::Transceiver.get_message_part_size(options) - 1) do |part|
           parts << part.join
         end
       else
