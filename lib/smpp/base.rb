@@ -202,7 +202,7 @@ module Smpp
         if !metadata
           raise "Got SubmitSmResponse for unknown sequence_number: #{pdu.sequence_number}"
         end
-        if pdu.command_status != Pdu::Base::ESME_ROK || true
+        if pdu.command_status != Pdu::Base::ESME_ROK
           logger.error "Error status in SubmitSmResponse: #{pdu.command_status}"
           run_callback(:message_rejected, self, metadata, pdu)
         else
