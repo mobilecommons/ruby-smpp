@@ -39,7 +39,7 @@ class Smpp::Transceiver < Smpp::Base
       parts = []
 #       logger.debug "Encoding :- #{Encoding.default_external.inspect}"
       if options[:data_coding] == 8
-        shadow_message = message.encode("UTF-8", :invalid => :replace, :undef => :replace, :replace => '') 
+        parts = message.chars.to_a.each_slice(Smpp::Transceiver.get_message_part_size(options))
       else
         while message.size > 0 do  
             parts << message.slice!(0...(Smpp::Transceiver.get_message_part_size(options) - 1))
