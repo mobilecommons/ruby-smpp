@@ -37,7 +37,8 @@ class Smpp::Transceiver < Smpp::Base
     if @state == :bound
       # Split the message into parts of 153 characters. (160 - 7 characters for UDH)
       parts = []
-      while message.size > 0 do
+      message = message.encode(Encoding::UTF_8) if options[:data_coding] == 8
+      while message.size > 0 do  
         parts << message.slice!(0...(Smpp::Transceiver.get_message_part_size(options) - 1))
       end
        
