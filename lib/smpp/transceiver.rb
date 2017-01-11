@@ -40,6 +40,9 @@ class Smpp::Transceiver < Smpp::Base
       while message.size > 0 do
         parts << message.slice!(0...(Smpp::Transceiver.get_message_part_size(options) - 1))
       end
+       
+      logger.debug "send_concat_mt_parts_details parts: #{parts.inspect}, parts size: #{parts.size}"
+      
       logger.debug "Getting message parts size #{parts.size}, Inspect the parts ! #{parts.inspect} , The message id = #{message_id}"
        0.upto(parts.size-1) do |i|
 #        
