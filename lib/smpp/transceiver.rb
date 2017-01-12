@@ -40,20 +40,21 @@ class Smpp::Transceiver < Smpp::Base
 #       logger.debug "Encoding :- #{Encoding.default_external.inspect}"
       if options[:data_coding] == 8
         logger.debug "data codeing is 8 horray #{message.inspect}"
-        message.chars.to_a.each_slice(Smpp::Transceiver.get_message_part_size(options) - 1) do |part|
-          parts << part.join
+        shadow_message = message
+        shadow_message.force_encoding(Encoding::UCS_2BE)
+        shadow_message = shadow_message.encode(Encoding::UTF_8, :invalid => :replace, :undef => :replace, :replace => '')
+        shadow_message.chars.to_a.each_slice(Smpp::Transceiver.get_message_part_size(options) - 1) do |part|
+          part = part.join
+          part = part.encode(Encoding::UCS_2BE, :invalid => :replace, :undef => :replace, :replace => '')
+          part.force_encoding(Encoding::BINARY)
+          parts << part
         end
       else
         while message.size > 0 do  
             parts << message.slice!(0...(Smpp::Transceiver.get_message_part_size(options) - 1))
         end
       end  
-#       if options[:data_coding] == 8
-#         parts.map! do |part|
-#           part.encode(Encoding::UCS_2BE, :invalid => :replace, :undef => :replace, :replace => '')
-#         end
-#       end
-       
+      
       logger.debug "send_concat_mt_parts_details parts: #{parts.inspect}, parts size: #{parts.size}"
       
       logger.debug "Getting message parts size #{parts.size}, Inspect the parts ! #{parts.inspect} , The message id = #{message_id}"
