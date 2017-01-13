@@ -33,13 +33,14 @@ class Smpp::Transceiver < Smpp::Base
 
   # Send a concatenated message with a body of > 160 characters as multiple messages.
   def send_concat_mt(message_id, source_addr, destination_addr, message, options = {})
-    logger.debug "Sending concatenated MT: #{message}"
+
     if @state == :bound
-      # Split the message into parts of 153 characters. (160 - 7 characters for UDH)
+      # Split the message into parts of 152 characters. (160 - 8 characters for UDH because we use 16 bit message_id) or
+      # Split it to 66 parts in case of UCS2 encodeing (70 - 8 characters for UDH because we use 16 bit message_id). 
       parts = []
-#       logger.debug "Encoding :- #{Encoding.default_external.inspect}"
+      # If message body is ucs2 encoded we will convert it back on the fly to utf8 then we will
+      # split it to parts and then encode each part back to binary
       if options[:data_coding] == 8
-        logger.debug "data codeing is 8 horray #{message.inspect}"
         shadow_message = message
         shadow_message.force_encoding(Encoding::UCS_2BE)
         shadow_message = shadow_message.encode(Encoding::UTF_8, :invalid => :replace, :undef => :replace, :replace => '')
@@ -54,25 +55,8 @@ class Smpp::Transceiver < Smpp::Base
             parts << message.slice!(0...(Smpp::Transceiver.get_message_part_size(options) - 1))
         end
       end  
-      
-      logger.debug "send_concat_mt_parts_details parts: #{parts.inspect}, parts size: #{parts.size}"
-      
-      logger.debug "Getting message parts size #{parts.size}, Inspect the parts ! #{parts.inspect} , The message id = #{message_id}"
-       0.upto(parts.size-1) do |i|
-#        
-#         udh = []
-#         udh[0] = sprintf("%c", 5)            # UDH is 5 bytes.
-#         logger.debug "_Step 1 - #{udh}"
-#         udh[1] = sprintf("%c%c", 0, 3)      # This is a concatenated message
-#         logger.debug "_Step 2 - #{udh}"
-#         #TODO Figure out why this needs to be an int here, it's a string elsewhere
-#         udh[2] = sprintf("%c", message_id)  # The ID for the entire concatenated message
-#         logger.debug "_Step 3 - #{udh}"        
-#         udh[3] = sprintf("%c", parts.size)  # How many parts this message consists of
-#         logger.debug "_Step 4 - #{udh}"
-#         udh[4] = sprintf("%c", i+1)         # This is part i+1
-#         logger.debug "_Step 5 - #{udh}"
-        
+            
+       0.upto(parts.size-1) do |i|  
         # New encoding style taken from 
         # https://github.com/Eloi/ruby-smpp/commit/6c2c20297cde4d3473c4c8362abed6ded6d59c09?diff=unified
         udh = [ 6,         # UDH is 5 bytes.
@@ -81,20 +65,16 @@ class Smpp::Transceiver < Smpp::Base
                 parts.size, # How many parts this message consists of
                 i + 1         # This is part i+1
                ].pack('CCCS>CC')
-#         udh = "050003F0030"+(i+1).to_s
         
         
         options[:esm_class] = 64 # This message contains a UDH header.
         options[:udh] = udh
-        logger.debug "Message sequence_number - #{i} Message UDH - #{udh.inspect} - All the options #{options.inspect}"
         pdu = Pdu::SubmitSm.new(source_addr, destination_addr, parts[i], options)
-        logger.debug "send_concat_mt_pdu_details #{pdu.inspect}"
         
         write_pdu pdu
 
         # This is definately a bit hacky - multiple PDUs are being associated with a single
         # message_id.
-        # @ack_ids[pdu.sequence_number] = message_id
          @ack_ids[pdu.sequence_number] = {:message_id => message_id, :part_number => i + 1, :parts_size => parts.size }
        end
     else
