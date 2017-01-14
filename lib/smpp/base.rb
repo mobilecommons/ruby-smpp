@@ -97,7 +97,6 @@ module Smpp
     def receive_data(data)
       #append data to buffer
       @data << data
-      logger.info "This is the raw data = #{data.inspect}"
       while (@data.length >=4)
         cmd_length = @data[0..3].unpack('N').first
         if(@data.length < cmd_length)
@@ -206,7 +205,6 @@ module Smpp
           logger.error "Error status in SubmitSmResponse: #{pdu.command_status}"
           run_callback(:message_rejected, self, metadata, pdu)
         else
-          logger.info "submit_sm_response pdu - #{pdu.inspect}"
           logger.info "Got OK SubmitSmResponse (#{pdu.message_id} -> #{metadata})"
           run_callback(:message_accepted, self, metadata, pdu)
         end
