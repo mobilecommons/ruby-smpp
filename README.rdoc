@@ -33,6 +33,10 @@ For a quick test, download smscsim.jar and smpp.jar from the Logica site, and st
 
   java -cp smscsim.jar:smpp.jar com.logica.smscsim.Simulator
 
+If you the previous line gave you an error try this.
+
+   java -cp opensmpp-core-3.0.0.jar:opensmpp-sim-3.0.0.jar org.smpp.smscsim.Simulator
+
 Then type 1 (start simulation), and enter 6000 for port number. The simulator then starts a server socket on a background thread. In another terminal window, start the sample sms gateway from the ruby-smpp/examples directory by typing:
 
   ruby sample_gateway.rb
