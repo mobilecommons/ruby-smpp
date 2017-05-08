@@ -47,7 +47,7 @@ class Smpp::Transceiver < Smpp::Base
 #       shadow_message = shadow_message.encode(Encoding::UTF_8, :invalid => :replace, :undef => :replace, :replace => '')
         shadow_message.chars.to_a.each_slice(Smpp::Transceiver.get_message_part_size(options) - 1) do |part|
           part = part.join
-#         part = part.encode(Encoding::UCS_2BE, :invalid => :replace, :undef => :replace, :replace => '')
+          part = part.encode(Encoding::UCS_2BE, :invalid => :replace, :undef => :replace, :replace => '')
           part.force_encoding(Encoding::BINARY)
           parts << part
         end
