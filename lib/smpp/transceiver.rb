@@ -121,6 +121,7 @@ class Smpp::Transceiver < Smpp::Base
     return 134 if options[:data_coding] == 5
     return 134 if options[:data_coding] == 6
     return 134 if options[:data_coding] == 7
+    return 34  if options[:data_coding] == 8 and options[:emoji] == true
     return 67  if options[:data_coding] == 8
     return 153
   end
