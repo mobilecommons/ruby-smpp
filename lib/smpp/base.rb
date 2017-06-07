@@ -107,6 +107,7 @@ module Smpp
         pkt = @data.slice!(0,cmd_length)
 
         begin
+          logger.info "Got one! #{pkt}"
           # parse incoming PDU
           pdu = read_pdu(pkt)
 
