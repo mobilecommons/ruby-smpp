@@ -96,20 +96,15 @@ module Smpp
     # EventMachine::Connection#receive_data
     def receive_data(data)
       #append data to buffer
-      logger.info "debug_mcommons: raw #{data.inspect}"
       @data << data
       while (@data.length >=4)
         cmd_length = @data[0..3].unpack('N').first
         if(@data.length < cmd_length)
           #not complete packet ... break
-          logger.info "debug_mcommons: not a complete packet ! #{@data}"
           break
         end
-        logger.info "debug_mcommons: before data.slice! ! #{@data}"
         pkt = @data.slice!(0,cmd_length)
-        logger.info "debug_mcommons: after data.slice! ! #{@data}"
         begin
-          logger.info "Got one! #{pkt}"
           # parse incoming PDU
           pdu = read_pdu(pkt)
 
