@@ -38,18 +38,42 @@ class Smpp::Transceiver < Smpp::Base
       # Split the message into parts of 152 characters. (160 - 8 characters for UDH because we use 16 bit message_id) or
       # Split it to 66 parts in case of UCS2 encodeing (70 - 8 characters for UDH because we use 16 bit message_id). 
       parts = []
+      part = []
       # If message body is ucs2 encoded we will convert it back on the fly to utf8 then we will
       # split it to parts and then encode each part back to binary
       if options[:data_coding] == 8
-        shadow_message = message
-        shadow_message.force_encoding(Encoding::UTF_16BE)
-        shadow_message = shadow_message.encode(Encoding::UTF_8, :invalid => :replace, :undef => :replace, :replace => '')
-        shadow_message.chars.to_a.each_slice(Smpp::Transceiver.get_message_part_size(options)) do |part|
-          part = part.join
-          part = part.encode(Encoding::UTF_16BE, :invalid => :replace, :undef => :replace, :replace => '')
-          part.force_encoding(Encoding::BINARY)
-          parts << part
+        message_chars = message.chars.to_a.map do |char|
+          char.force_encoding(Encoding::UTF_16BE)
         end
+
+        message_chars = message_chars.map! do |char|
+          char.encode(Encoding::UTF_8, :invalid => :replace, :undef => :replace, :replace => '')
+        end
+
+        message_chars.each.with_index.inject(0) do |part_size,(value,index)|
+          if 67 == part_size or (67 == (part_size - 1 ) and value.size == 2)
+            parts << part.join.force_encoding(Encoding::BINARY)
+            part_size = 0
+          end
+          part_size += value.size
+          if value.size == 2
+            char = value.dup
+            cahr = char.encode(Encoding::UTF_16BE, :invalid => :replace, :undef => :replace, :replace => '')
+            char = cahr.force_encoding(Encoding::UTF_8)
+            part_size += 2 if !char.scan(ALL_EMOJI).empty?
+          end
+          part << value.encode(Encoding::UTF_16BE, :invalid => :replace, :undef => :replace, :replace => '')
+          part_size
+        end
+        # shadow_message = message
+        # shadow_message.force_encoding(Encoding::UTF_16BE)
+        # shadow_message = shadow_message.encode(Encoding::UTF_8, :invalid => :replace, :undef => :replace, :replace => '')
+        # shadow_message.chars.to_a.each_slice(Smpp::Transceiver.get_message_part_size(options)) do |part|
+        #   part = part.join
+        #   part = part.encode(Encoding::UTF_16BE, :invalid => :replace, :undef => :replace, :replace => '')
+        #   part.force_encoding(Encoding::BINARY)
+        #   parts << part
+        # end
       else
         while message.size > 0 do  
             parts << message.slice!(0...Smpp::Transceiver.get_message_part_size(options))
@@ -121,7 +145,7 @@ class Smpp::Transceiver < Smpp::Base
     return 134 if options[:data_coding] == 5
     return 134 if options[:data_coding] == 6
     return 134 if options[:data_coding] == 7
-    return 34  if options[:data_coding] == 8 and options[:emoji] == true
+    return 67  if options[:data_coding] == 8 and options[:emoji] == true
     return 67  if options[:data_coding] == 8
     return 153
   end
