@@ -14,6 +14,7 @@
 #   unbound(transceiver)
 
 class Smpp::Transceiver < Smpp::Base
+  ALL_EMOJI  = /[\u{00A9}\u{00AE}\u{203C}-\u{3299}\u{1F004}-\u{1F9C0}]/
 
   # Send an MT SMS message. Delegate will receive message_accepted callback when SMSC
   # acknowledges, or the message_rejected callback upon error
@@ -43,32 +44,21 @@ class Smpp::Transceiver < Smpp::Base
       # split it to parts and then encode each part back to binary
       if options[:data_coding] == 8
         logger.debug "Mido in datacoding 8"
-        message_chars = message.chars.to_a.map do |char|
-          char.force_encoding(Encoding::UTF_16BE)
-        end
-
-        message_chars = message_chars.map! do |char|
-          chat_enc = char.encode(Encoding::UTF_8, :invalid => :replace, :undef => :replace, :replace => '')
-          chat_enc == "" ? char : chat_enc
-        end
-
-        message_chars.each.with_index.inject(0) do |part_size,(value,index)|
-          if 67 == part_size or (67 == (part_size - 1 ) and value.size == 2)
+        logger.debug "Mido in datacoding #{message}"
+        shadow_message = message
+        shadow_message.force_encoding(Encoding::UTF_16BE)
+        shadow_message = shadow_message.encode(Encoding::UTF_8, :invalid => :replace, :undef => :replace, :replace => '')
+        logger.debug "Mido in datacoding #{shadow_message}"
+        logger.debug "Mido in datacoding #{shadow_message.size}"
+        shadow_message.chars.to_a.each.with_index.inject(0) do |part_size,(value,index)|
+          part_size += value.size
+          value = value.encode(Encoding::UTF_16BE, :invalid => :replace, :undef => :replace, :replace => '')
+          part << value
+          if (67 == part_size or (67 == (part_size - 1 ) and value.size == 2) or index + 1 == shadow_message.chars.to_a.size)
             parts << part.map{ |char| char.force_encoding(Encoding::BINARY) }.join
             part = []
             part_size = 0
-          elsif index + 1 == message_chars.size
-            parts << part.map{ |char| char.force_encoding(Encoding::BINARY) }.join
           end
-          part_size += value.size
-          if value.size == 2
-            char = value.dup
-            cahr_enc_16 = char.encoding.to_s == "UTF-16BE" ? char : char.encode(Encoding::UTF_16BE, :invalid => :replace, :undef => :replace, :replace => '')
-            char_enc_8 = cahr_enc_16.force_encoding(Encoding::UTF_8)
-            part_size += 2 if !char_enc_8.scan(ALL_EMOJI).empty?
-          end
-          value = value.encoding.to_s == "UTF-16BE" ? value : value.encode(Encoding::UTF_16BE, :invalid => :replace, :undef => :replace, :replace => '')
-          part << value
           part_size
         end
         logger.debug "Mido partsss #{parts.size}"
