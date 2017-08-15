@@ -51,8 +51,7 @@ class Smpp::Transceiver < Smpp::Base
         logger.debug "Mido in datacoding #{shadow_message}"
         logger.debug "Mido in datacoding #{shadow_message.size}"
         shadow_message.chars.to_a.each.with_index.inject(0) do |part_size,(value,index)|
-          part_size += value.size
-          part_size += 2 if value.size == 2
+          value.scan(ALL_EMOJI).empty? ? part_size += 1 : part_size += 2
           value = value.encode(Encoding::UTF_16BE, :invalid => :replace, :undef => :replace, :replace => '')
           part << value
           if (67 == part_size or (67 == (part_size - 1 ) and value.size == 2) or index + 1 == shadow_message.chars.to_a.size)
