@@ -47,22 +47,27 @@ class Smpp::Transceiver < Smpp::Base
         end
 
         message_chars = message_chars.map! do |char|
-          char.encode(Encoding::UTF_8, :invalid => :replace, :undef => :replace, :replace => '')
+          chat_enc = char.encode(Encoding::UTF_8, :invalid => :replace, :undef => :replace, :replace => '')
+          chat_enc == "" ? char : chat_enc
         end
 
         message_chars.each.with_index.inject(0) do |part_size,(value,index)|
           if 67 == part_size or (67 == (part_size - 1 ) and value.size == 2)
-            parts << part.join.force_encoding(Encoding::BINARY)
+            parts << part.map{ |char| char.force_encoding(Encoding::BINARY) }.join
+            part = []
             part_size = 0
+          elsif index + 1 == message_chars.size
+            parts << part.map{ |char| char.force_encoding(Encoding::BINARY) }.join
           end
           part_size += value.size
           if value.size == 2
             char = value.dup
-            cahr = char.encode(Encoding::UTF_16BE, :invalid => :replace, :undef => :replace, :replace => '')
-            char = cahr.force_encoding(Encoding::UTF_8)
-            part_size += 2 if !char.scan(ALL_EMOJI).empty?
+            cahr_enc_16 = char.encoding.to_s == "UTF-16BE" ? char : char.encode(Encoding::UTF_16BE, :invalid => :replace, :undef => :replace, :replace => '')
+            char_enc_8 = cahr_enc_16.force_encoding(Encoding::UTF_8)
+            part_size += 2 if !char_enc_8.scan(ALL_EMOJI).empty?
           end
-          part << value.encode(Encoding::UTF_16BE, :invalid => :replace, :undef => :replace, :replace => '')
+          value = value.encoding.to_s == "UTF-16BE" ? value : value.encode(Encoding::UTF_16BE, :invalid => :replace, :undef => :replace, :replace => '')
+          part << value
           part_size
         end
         # shadow_message = message
