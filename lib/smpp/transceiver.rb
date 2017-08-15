@@ -42,6 +42,7 @@ class Smpp::Transceiver < Smpp::Base
       # If message body is ucs2 encoded we will convert it back on the fly to utf8 then we will
       # split it to parts and then encode each part back to binary
       if options[:data_coding] == 8
+        logger.debug "Mido in datacoding 8"
         message_chars = message.chars.to_a.map do |char|
           char.force_encoding(Encoding::UTF_16BE)
         end
@@ -70,6 +71,8 @@ class Smpp::Transceiver < Smpp::Base
           part << value
           part_size
         end
+        logger.debug "Mido partsss #{parts.size}"
+        logger.debug "Mido partsss #{parts}"
         # shadow_message = message
         # shadow_message.force_encoding(Encoding::UTF_16BE)
         # shadow_message = shadow_message.encode(Encoding::UTF_8, :invalid => :replace, :undef => :replace, :replace => '')
