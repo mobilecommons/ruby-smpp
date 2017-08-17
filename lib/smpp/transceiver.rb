@@ -37,12 +37,13 @@ class Smpp::Transceiver < Smpp::Base
 
     if @state == :bound
       # Split the message into parts of 152 characters. (160 - 8 characters for UDH because we use 16 bit message_id) or
-      # Split it to 66 parts in case of UCS2 encodeing (70 - 8 characters for UDH because we use 16 bit message_id). 
+      # Split it to 66 parts in case of UCS2 encodeing (70 - 8 characters for UDH because we use 16 bit message_id).
       parts = []
       part = []
       # If message body is ucs2 encoded we will convert it back on the fly to utf8 then we will
       # split it to parts and then encode each part back to binary
       if options[:data_coding] == 8
+        max_part_size = Smpp::Transceiver.get_message_part_size(options)
         shadow_message = message
         shadow_message.force_encoding(Encoding::UTF_16BE)
         shadow_message = shadow_message.encode(Encoding::UTF_8, :invalid => :replace, :undef => :replace, :replace => '')
@@ -50,7 +51,7 @@ class Smpp::Transceiver < Smpp::Base
           value.scan(ALL_EMOJI).empty? ? part_size += 1 : part_size += 2
           value = value.encode(Encoding::UTF_16BE, :invalid => :replace, :undef => :replace, :replace => '')
           part << value
-          if (67 == part_size or (67 == (part_size - 1 ) and value.size == 2) or index + 1 == shadow_message.chars.to_a.size)
+          if (max_part_size == part_size or (max_part_size == (part_size - 1 ) and value.size == 2) or index + 1 == shadow_message.chars.to_a.size)
             parts << part.map{ |char| char.force_encoding(Encoding::BINARY) }.join
             part = []
             part_size = 0
