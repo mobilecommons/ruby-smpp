@@ -47,11 +47,12 @@ class Smpp::Transceiver < Smpp::Base
         shadow_message = message
         shadow_message.force_encoding(Encoding::UTF_16BE)
         shadow_message = shadow_message.encode(Encoding::UTF_8, :invalid => :replace, :undef => :replace, :replace => '')
-        shadow_message.chars.to_a.each.with_index.inject(0) do |part_size,(value,index)|
+        shadow_message_arr = shadow_message.chars.to_a
+        shadow_message_arr.each.with_index.inject(0) do |part_size,(value,index)|
           value.scan(ALL_EMOJI).empty? ? part_size += 1 : part_size += 2
           value = value.encode(Encoding::UTF_16BE, :invalid => :replace, :undef => :replace, :replace => '')
           part << value
-          if (max_part_size == part_size or (max_part_size == (part_size - 1 ) and value.size == 2) or index + 1 == shadow_message.chars.to_a.size)
+          if (max_part_size == part_size or (max_part_size == (part_size - 1 ) and value.size == 2) or index + 1 == shadow_message.chars.to_a.size or (shadow_message_arr[index + 1].scan(ALL_EMOJI).empty? == false and (max_part_size-1) == part_size))
             parts << part.map{ |char| char.force_encoding(Encoding::BINARY) }.join
             part = []
             part_size = 0
