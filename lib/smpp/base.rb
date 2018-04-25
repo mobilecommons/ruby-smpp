@@ -57,6 +57,9 @@ module Smpp
 
     # invoked by EventMachine when connected
     def post_init
+      # TLS settings
+      start_tls @config[:start_tls] if @config[:start_tls]
+
       # send Bind PDU if we are a binder (eg
       # Receiver/Transmitter/Transceiver
       send_bind unless defined?(am_server?) && am_server?
